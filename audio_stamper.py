@@ -6,6 +6,10 @@ import sounddevice as sd
 import soundfile as sf
 import queue
 
+folder = "./temp"
+audio_output = os.path.join(folder, "audio.wav")
+audio_meta = os.path.join(folder, "audio_meta.p")
+
 global delta_time
 global num_frames
 data = list()
@@ -34,16 +38,16 @@ def callback(indata, frames, c_time, status):
 	q.put(indata)
 
 try:
-	os.remove("audio.wav")
+	os.remove(audio_output)
 except OSError:
 	pass
-with sf.SoundFile("audio.wav", mode='x', samplerate=int(device_info['default_samplerate']),	channels=device_info["max_input_channels"], subtype="PCM_24") as file:
+with sf.SoundFile(audio_output, mode='x', samplerate=int(device_info['default_samplerate']), channels=device_info["max_input_channels"], subtype="PCM_24") as file:
 	with sd.InputStream(samplerate=int(device_info['default_samplerate']), device=dev_num, channels=device_info["max_input_channels"], callback=callback) as stream:
 		test_time = 10
 		end_time = test_time + time.time()
 		while time.time() < end_time or True:
 			file.write(q.get())
-			pickle.dump(time_map, open("audio_meta.p", "wb"))
+			pickle.dump(time_map, open(audio_meta, "wb"))
 
-full_size = os.path.getsize("audio.wav") + os.path.getsize("audio_meta.p")
+full_size = os.path.getsize(audio_output) + os.path.getsize(audio_meta)
 print("File has a size of:",full_size/1000000,"mb for a rate of",(full_size/1000000)/test_time,"mb/s or",test_time/(full_size/1000000000),"seconds per GB")

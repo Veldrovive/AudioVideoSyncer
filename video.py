@@ -12,12 +12,17 @@ fourcc = cv2.VideoWriter_fourcc(*'MP4V')
 ret, frame = cap.read()
 print(frame.shape[:2][::-1])
 
+folder = "./temp"
+video_output = os.path.join(folder, "video.mp4")
+video_meta = os.path.join(folder, "video_meta.p")
+video_final = os.path.join(folder, "video_final.p")
+
 try:
-	os.remove("video.mp4")
-	os.remove("video_final.mp4")
+	os.remove(video_output)
+	os.remove(video_final)
 except OSError:
 	pass
-out = cv2.VideoWriter('video.mp4',fourcc, 30, frame.shape[:2][::-1])
+out = cv2.VideoWriter(video_output,fourcc, 30, frame.shape[:2][::-1])
 
 num_frames = 0
 start_time = time.time()
@@ -44,15 +49,15 @@ true_end = time.time()
 print("Stopped Getting frames after:",true_end-true_start,"seconds")
 print("FPS:",num_frames/(end_time-start_time))
 
-pickle.dump([true_start, true_end], open("video_meta.p", "wb"))
+pickle.dump([true_start, true_end], open(video_meta, "wb"))
 
 # Release everything if job is finished
 cap.release()
 out.release()
 cv2.destroyAllWindows()
-out = cv2.VideoWriter('video_final.mp4',fourcc, num_frames/(end_time-start_time), frame.shape[:2][::-1])
+out = cv2.VideoWriter(video_final,fourcc, num_frames/(end_time-start_time), frame.shape[:2][::-1])
 
-cap = cv2.VideoCapture("./video.mp4")
+cap = cv2.VideoCapture(video_output)
 while True:
 	ret, frame = cap.read()
 	if frame is None:
